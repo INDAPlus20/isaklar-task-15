@@ -18,7 +18,7 @@ fn main() {
             continue;
         }
         let mut first = lines[l].split_whitespace();
-        
+
         let n: usize = first.next().unwrap().parse().unwrap();
         let m: usize = first.next().unwrap().parse().unwrap();
         //eprintln!("n = {} m = {}", n, m);
@@ -39,11 +39,11 @@ fn main() {
                 1 => {
                     let p = command.next().unwrap().parse::<usize>().unwrap() - 1;
                     let q = command.next().unwrap().parse::<usize>().unwrap() - 1;
-                    let p_root = find_root(&tree, p);
-                    let q_root = find_root(&tree, q);
+                    let p_root = find_root(&mut tree, p);
+                    let q_root = find_root(&mut tree, q);
                     if p_root != q_root {
                         // make the longest branch the root
-                        if tree[p_root].1 <= tree[q_root].1 {
+                        if tree[p_root].2 <= tree[q_root].2 {
                             // change parent pointer of the set containing q
                             tree[p_root].0 = q_root;
                             // update sum for root node
@@ -63,8 +63,8 @@ fn main() {
                 2 => {
                     let p = command.next().unwrap().parse::<usize>().unwrap() - 1;
                     let q = command.next().unwrap().parse::<usize>().unwrap() - 1;
-                    let p_root = find_root(&tree, p);
-                    let q_root = find_root(&tree, q);
+                    let p_root = find_root(&mut tree, p);
+                    let q_root = find_root(&mut tree, q);
                     if p_root != q_root {
                         // move p to q
                         // save parent
@@ -134,7 +134,7 @@ fn main() {
                 }
                 3 => {
                     let p = command.next().unwrap().parse::<usize>().unwrap() - 1;
-                    let root = find_root(&tree, p);
+                    let root = find_root(&mut tree, p);
                     let (sum, count) = sum_count(&tree, root);
                     println!("{:?} {:?}", count, sum);
                 }
@@ -147,13 +147,12 @@ fn main() {
     }
 }
 
-fn find_root(tree: &Vec<(usize, usize, usize)>, e: usize) -> usize {
-    let mut root = e;
-    while root != tree[root].0 {
-        root = tree[root].0;
+fn find_root(tree: &mut Vec<(usize, usize, usize)>, e: usize) -> usize {
+    if e != tree[e].0 {
+        tree[e].0 = find_root(tree, tree[e].0);
     }
 
-    return root;
+    return tree[e].0;
 }
 
 fn sum_count(tree: &Vec<(usize, usize, usize)>, root: usize) -> (usize, usize) {
