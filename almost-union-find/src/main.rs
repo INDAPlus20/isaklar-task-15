@@ -23,11 +23,14 @@ fn main() {
         let m: usize = first.next().unwrap().parse().unwrap();
         //eprintln!("n = {} m = {}", n, m);
 
-        let mut tree: Vec<(usize, usize, usize)> = Vec::with_capacity(n);
+        // (parent, sum, count)
+        let mut tree: Vec<(usize, usize, usize)> = vec![(0,0,0); 2*n ];
 
         // fill with pointers
-        for i in 0..(n) {
-            tree.push((i, i + 1, 1));
+        // i + n contains the sums and count
+        for i in 0..n  {
+            tree[i].0 = i + n;
+            tree[i + n] = (i + n, i + 1, 1);
         }
 
         // parse commands
@@ -42,22 +45,13 @@ fn main() {
                     let p_root = find_root(&mut tree, p);
                     let q_root = find_root(&mut tree, q);
                     if p_root != q_root {
-                        // make the longest branch the root
-                        if tree[p_root].2 <= tree[q_root].2 {
-                            // change parent pointer of the set containing q
-                            tree[p_root].0 = q_root;
-                            // update sum for root node
-                            tree[q_root].1 += tree[p_root].1;
-                            // update count for root node
-                            tree[q_root].2 += tree[p_root].2;
-                        } else {
-                            // change parent pointer of the set containing q
-                            tree[q_root].0 = p_root;
-                            // update sum for root node
-                            tree[p_root].1 += tree[q_root].1;
-                            // update count for root node
-                            tree[p_root].2 += tree[q_root].2;
-                        }
+                        // change parent pointer of the set containing q
+                        tree[p_root].0 = q_root;
+                        // update sum for root node
+                        tree[q_root].1 += tree[p_root].1;
+                        // update count for root node
+                        tree[q_root].2 += tree[p_root].2;
+                  
                     }
                 }
                 2 => {
@@ -67,69 +61,13 @@ fn main() {
                     let q_root = find_root(&mut tree, q);
                     if p_root != q_root {
                         // move p to q
-                        // save parent
-                        let p_parent = tree[p].0;
-                        // set new parent
                         tree[p].0 = q_root;
-                        if p != p_parent {
-                            // find any child of p and change their parent pointers to p_parent
-                            let mut found = 0;
-                            let children = tree[p].2 - 1;
-                            for i in 0..tree.len() {
-                                if i != p {
-                                    // skip p
-                                    if tree[i].0 == p {
-                                        tree[i].0 = p_parent;
-
-                                        found += 1;
-                                        if found >= children {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            // update previous parent sum and count
-                            tree[p_parent].1 -= (p + 1);
-                            tree[p_parent].2 -= 1;
-                        } else if p == p_parent && tree[p].2 != 1 {
-                            // if its a root node and non-singular
-                            // find any child of p and determine new root node
-                            let mut new_root = p;
-                            let mut found = 0;
-                            let children = tree[p].2 - 1;
-                            for i in 0..tree.len() {
-                                if i != p {
-                                    // skip p
-                                    if tree[i].0 == p {
-                                        if new_root == p {
-                                            // make this new root
-                                            tree[i].0 = i;
-                                            new_root = i;
-                                        } else {
-                                            // connect to new
-                                            tree[i].0 = new_root;
-                                            // update sum for root node
-                                            tree[new_root].1 += tree[i].1;
-                                            // update count for root node
-                                            tree[new_root].2 += tree[i].2;
-                                        }
-                                        found += 1;
-                                        if found >= children {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            // if its a singular node
-                        }
-
-                        // reset sum and count
-                        tree[p] = (q_root, p + 1, 1);
-
+                        // update old parent sum and count
+                        tree[p_root].1 -= (p + 1);
+                        tree[p_root].2 -= 1;
                         // update new parent sum and count
-                        tree[q_root].1 += tree[p].1;
-                        tree[q_root].2 += tree[p].2;
+                        tree[q_root].1 += (p + 1);
+                        tree[q_root].2 += 1;
                     }
                 }
                 3 => {
@@ -147,6 +85,7 @@ fn main() {
     }
 }
 
+// finds the root and flattens the tree
 fn find_root(tree: &mut Vec<(usize, usize, usize)>, e: usize) -> usize {
     if e != tree[e].0 {
         tree[e].0 = find_root(tree, tree[e].0);
