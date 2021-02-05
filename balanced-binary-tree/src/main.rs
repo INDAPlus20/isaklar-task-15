@@ -1,6 +1,10 @@
 use core::panic;
 use std::usize;
 
+
+
+
+
 fn main() {
 
 }
@@ -13,6 +17,10 @@ struct RedBlackTree {
     nodes: Vec<Node>
 }
 
+//
+// Shameless "borrowing" of implementation from https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+//
+//
 impl RedBlackTree {
     pub fn get_parent(&self, node: usize) -> Option<usize> {
         return self.nodes[node].parent;
@@ -335,7 +343,7 @@ mod test{
         root = tree.insert(Node::new(14), Some(root));
         root = tree.insert(Node::new(11), Some(root));
         tree.remove(2);
-        
+
     }
 } 
 
